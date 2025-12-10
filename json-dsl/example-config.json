@@ -1,0 +1,238 @@
+{
+  "$schema": "1.0",
+  "functions": {
+    "add": {
+      "type": "FUNCTION",
+      "config": {
+        "description": "Сложение двух чисел",
+        "params": ["a", "b"],
+        "body": [],
+        "return": { "operator": "+", "left": { "ref": "a" }, "right": { "ref": "b" } }
+      }
+    },
+
+    "multiply": {
+      "type": "FUNCTION",
+      "config": {
+        "description": "Умножение двух чисел",
+        "params": ["a", "b"],
+        "body": [],
+        "return": { "operator": "*", "left": { "ref": "a" }, "right": { "ref": "b" } }
+      }
+    },
+
+    "sumArray": {
+      "type": "FUNCTION",
+      "config": {
+        "description": "Сумма элементов массива",
+        "params": ["items"],
+        "body": [
+          { "let": "total", "value": { "literal": 0 } },
+          {
+            "for": "item",
+            "in": { "ref": "items" },
+            "do": [
+              {
+                "set": "total",
+                "value": { "operator": "+", "left": { "ref": "total" }, "right": { "ref": "item" } }
+              }
+            ]
+          }
+        ],
+        "return": { "ref": "total" }
+      }
+    },
+
+    "factorial": {
+      "type": "FUNCTION",
+      "config": {
+        "description": "Вычисление факториала",
+        "params": ["n"],
+        "body": [
+          { "let": "result", "value": { "literal": 1 } },
+          { "let": "i", "value": { "literal": 1 } },
+          {
+            "while": { "operator": "<=", "left": { "ref": "i" }, "right": { "ref": "n" } },
+            "do": [
+              {
+                "set": "result",
+                "value": { "operator": "*", "left": { "ref": "result" }, "right": { "ref": "i" } }
+              },
+              {
+                "set": "i",
+                "value": { "operator": "+", "left": { "ref": "i" }, "right": { "literal": 1 } }
+              }
+            ]
+          }
+        ],
+        "return": { "ref": "result" }
+      }
+    },
+
+    "greet": {
+      "type": "FUNCTION",
+      "config": {
+        "description": "Приветствие пользователя",
+        "params": ["name", "formal"],
+        "body": [],
+        "return": {
+          "condition": { "ref": "formal" },
+          "then": { "operator": "+", "left": { "literal": "Здравствуйте, " }, "right": { "ref": "name" } },
+          "else": { "operator": "+", "left": { "literal": "Привет, " }, "right": { "ref": "name" } }
+        }
+      }
+    },
+
+    "calculateOrder": {
+      "type": "FUNCTION",
+      "config": {
+        "description": "Расчёт стоимости заказа",
+        "debug": false,
+        "params": ["order", "taxRate"],
+        "body": [
+          { "let": "subtotal", "value": { "literal": 0 } },
+          {
+            "for": "item",
+            "in": { "object": { "ref": "order" }, "property": "items" },
+            "do": [
+              {
+                "let": "itemTotal",
+                "value": {
+                  "operator": "*",
+                  "left": { "object": { "ref": "item" }, "property": "price" },
+                  "right": { "object": { "ref": "item" }, "property": "qty" }
+                }
+              },
+              {
+                "set": "subtotal",
+                "value": { "operator": "+", "left": { "ref": "subtotal" }, "right": { "ref": "itemTotal" } }
+              }
+            ]
+          },
+          {
+            "let": "total",
+            "value": {
+              "operator": "*",
+              "left": { "ref": "subtotal" },
+              "right": { "operator": "+", "left": { "literal": 1 }, "right": { "ref": "taxRate" } }
+            }
+          }
+        ],
+        "return": {
+          "properties": {
+            "subtotal": { "ref": "subtotal" },
+            "total": { "ref": "total" },
+            "orderId": { "object": { "ref": "order" }, "property": "id" }
+          }
+        }
+      }
+    },
+
+    "findMax": {
+      "type": "FUNCTION",
+      "config": {
+        "description": "Поиск максимального значения в массиве",
+        "params": ["numbers"],
+        "body": [
+          { "let": "max", "value": { "object": { "ref": "numbers" }, "index": { "literal": 0 } } },
+          {
+            "for": "num",
+            "in": { "ref": "numbers" },
+            "do": [
+              {
+                "if": { "operator": ">", "left": { "ref": "num" }, "right": { "ref": "max" } },
+                "then": [
+                  { "set": "max", "value": { "ref": "num" } }
+                ]
+              }
+            ]
+          }
+        ],
+        "return": { "ref": "max" }
+      }
+    },
+
+    "isPalindrome": {
+      "type": "FUNCTION",
+      "config": {
+        "description": "Проверка, является ли строка палиндромом",
+        "params": ["str"],
+        "body": [
+          { "let": "reversed", "value": { "literal": "" } },
+          { "let": "i", "value": { "operator": "-", "left": { "call": "len", "arguments": [{ "ref": "str" }] }, "right": { "literal": 1 } } },
+          {
+            "while": { "operator": ">=", "left": { "ref": "i" }, "right": { "literal": 0 } },
+            "do": [
+              {
+                "set": "reversed",
+                "value": {
+                  "operator": "+",
+                  "left": { "ref": "reversed" },
+                  "right": { "method": "charAt", "object": { "ref": "str" }, "arguments": [{ "ref": "i" }] }
+                }
+              },
+              { "set": "i", "value": { "operator": "-", "left": { "ref": "i" }, "right": { "literal": 1 } } }
+            ]
+          }
+        ],
+        "return": { "operator": "===", "left": { "ref": "str" }, "right": { "ref": "reversed" } }
+      }
+    },
+
+    "filterPositive": {
+      "type": "FUNCTION",
+      "config": {
+        "description": "Фильтрация положительных чисел",
+        "params": ["numbers"],
+        "body": [
+          { "let": "result", "value": { "elements": [] } },
+          {
+            "for": "num",
+            "in": { "ref": "numbers" },
+            "do": [
+              {
+                "if": { "operator": ">", "left": { "ref": "num" }, "right": { "literal": 0 } },
+                "then": [
+                  {
+                    "let": "_",
+                    "value": { "method": "push", "object": { "ref": "result" }, "arguments": [{ "ref": "num" }] }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "return": { "ref": "result" }
+      }
+    },
+
+    "fibonacci": {
+      "type": "FUNCTION",
+      "config": {
+        "description": "N-ое число Фибоначчи",
+        "params": ["n"],
+        "body": [
+          {
+            "if": { "operator": "<=", "left": { "ref": "n" }, "right": { "literal": 1 } },
+            "then": [
+              { "return": { "ref": "n" } }
+            ]
+          },
+          { "let": "a", "value": { "literal": 0 } },
+          { "let": "b", "value": { "literal": 1 } },
+          { "let": "i", "value": { "literal": 2 } },
+          {
+            "while": { "operator": "<=", "left": { "ref": "i" }, "right": { "ref": "n" } },
+            "do": [
+              { "let": "temp", "value": { "ref": "b" } },
+              { "set": "b", "value": { "operator": "+", "left": { "ref": "a" }, "right": { "ref": "b" } } },
+              { "set": "a", "value": { "ref": "temp" } },
+              { "set": "i", "value": { "operator": "+", "left": { "ref": "i" }, "right": { "literal": 1 } } }
+            ]
+          }
+        ],
+        "return": { "ref": "b" }
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "json-dsl-engine",
+  "version": "1.0.0",
+  "description": "Безопасный интерпретатор JSON-конфигураций для выполнения функций без eval",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "demo": "ts-node demo.ts",
+    "test": "ts-node demo.ts"
+  },
+  "keywords": ["json", "dsl", "interpreter", "safe", "no-eval"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.0",
+    "ts-node": "^10.9.0",
+    "@types/node": "^20.0.0"
+  }
+}
