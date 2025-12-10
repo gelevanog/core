@@ -6,7 +6,7 @@
 
 - **Компиляция в функции** — JSON превращается в реальные JS-функции, которые можно передавать и вызывать
 - **Контекстное выполнение** — одна функция может работать с разными контекстами (переменные, внешние функции)
-- **Безопасность** — нет `eval`, whitelist методов, защита от бесконечных циклов
+- **Безопасность** — нет `eval`, whitelist методов
 - **TypeScript** — полная типизация
 
 ## Быстрый старт
@@ -61,7 +61,7 @@ const calculate = compiler.compile('calculatePrice', {
 
 ### Доступ к свойствам
 
-```json
+```jsonc
 // obj.property
 { "object": { "ref": "user" }, "property": "name" }
 
@@ -71,7 +71,7 @@ const calculate = compiler.compile('calculatePrice', {
 
 ### Операции
 
-```json
+```jsonc
 // Бинарные: +, -, *, /, %, ==, ===, !=, !==, <, <=, >, >=, &&, ||
 { "operator": "+", "left": { "ref": "a" }, "right": { "ref": "b" } }
 
@@ -91,7 +91,7 @@ const calculate = compiler.compile('calculatePrice', {
 
 ### Вызов функций
 
-```json
+```jsonc
 // Вызов пользовательской или встроенной функции
 { "call": "sumArray", "arguments": [{ "ref": "items" }] }
 
@@ -101,7 +101,7 @@ const calculate = compiler.compile('calculatePrice', {
 
 ### Создание объектов и массивов
 
-```json
+```jsonc
 // Объект
 { "properties": { "x": { "literal": 1 }, "y": { "ref": "value" } } }
 
@@ -229,8 +229,130 @@ toString, toFixed
 
 - **Нет eval** — весь код интерпретируется через AST
 - **Whitelist методов** — только разрешённые методы объектов
-- **Защита от бесконечных циклов** — максимум 100,000 итераций
 - **Изолированный scope** — функции не имеют доступа к глобальным объектам
+
+## Интеграция в ядро
+
+JSON DSL Compiler предназначен для интеграции в основное ядро приложения. Основные сценарии использования:
+
+### 1. Загрузка конфигурации из внешних источников
+
+```typescript
+import { JsonDslCompiler } from 'json-dsl';
+
+// Загрузка из файла, базы данных или API
+const config = await fetch('/api/functions').then(r => r.json());
+
+const compiler = new JsonDslCompiler();
+compiler.load(config);
+```
+
+### 2. Регистрация в ядре как провайдер функций
+
+```typescript
+// core/function-registry.ts
+class FunctionRegistry {
+  private compiler: JsonDslCompiler;
+  
+  constructor() {
+    this.compiler = new JsonDslCompiler();
+  }
+  
+  loadFromConfig(config: DslConfig) {
+    this.compiler.load(config);
+  }
+  
+  getFunction<TArgs extends unknown[], TReturn>(
+    name: string, 
+    context?: ExecutionContext
+  ): (...args: TArgs) => TReturn {
+    return this.compiler.compile<TArgs, TReturn>(name, context);
+  }
+  
+  // Список доступных функций
+  listFunctions(): FunctionInfo[] {
+    return this.compiler.list();
+  }
+}
+```
+
+### 3. Использование с контекстом приложения
+
+```typescript
+// Передача сервисов ядра в DSL-функции
+const compiler = new JsonDslCompiler();
+compiler.load(config);
+
+const processOrder = compiler.compile('processOrder', {
+  // Переменные из конфигурации приложения
+  variables: {
+    taxRate: appConfig.taxRate,
+    currency: appConfig.currency,
+  },
+  // Внешние функции из ядра
+  functions: {
+    sendEmail: emailService.send.bind(emailService),
+    logEvent: analytics.track.bind(analytics),
+    getUser: userService.getById.bind(userService),
+  },
+  // Встроенные функции (расширение стандартных)
+  builtins: {
+    formatCurrency: (amount: number) => `${amount.toFixed(2)} ${appConfig.currency}`,
+    now: () => new Date().toISOString(),
+  },
+});
+
+// Вызов с данными
+const result = processOrder(orderData);
+```
+
+### 4. Динамическое обновление функций
+
+```typescript
+// Горячая перезагрузка функций без перезапуска приложения
+class HotReloadableFunctions {
+  private compiler: JsonDslCompiler;
+  private cache = new Map<string, CompiledFunction>();
+  
+  async reload() {
+    const newConfig = await this.fetchConfig();
+    this.compiler = new JsonDslCompiler();
+    this.compiler.load(newConfig);
+    this.cache.clear(); // Сброс кэша
+  }
+  
+  get(name: string, context?: ExecutionContext) {
+    const key = `${name}:${JSON.stringify(context?.variables || {})}`;
+    
+    if (!this.cache.has(key)) {
+      this.cache.set(key, this.compiler.compile(name, context));
+    }
+    
+    return this.cache.get(key)!;
+  }
+}
+```
+
+### 5. Мультитенантность
+
+```typescript
+// Разные конфигурации для разных клиентов
+class TenantFunctionProvider {
+  private compilers = new Map<string, JsonDslCompiler>();
+  
+  loadTenant(tenantId: string, config: DslConfig) {
+    const compiler = new JsonDslCompiler();
+    compiler.load(config);
+    this.compilers.set(tenantId, compiler);
+  }
+  
+  getFunction(tenantId: string, fnName: string, context?: ExecutionContext) {
+    const compiler = this.compilers.get(tenantId);
+    if (!compiler) throw new Error(`Tenant ${tenantId} not found`);
+    return compiler.compile(fnName, context);
+  }
+}
+```
 
 ## Пример: полная функция
 

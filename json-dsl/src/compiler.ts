@@ -328,13 +328,8 @@ export class JsonDslCompiler {
     // WHILE: { while: expr, do: [...] }
     if ('while' in stmt) {
       const s = stmt as WhileStmt;
-      let iterations = 0;
-      const maxIterations = 100000;
 
       while (this.evalExpr(s.while, scope, context)) {
-        if (++iterations > maxIterations) {
-          throw new Error('Maximum iterations exceeded (infinite loop protection)');
-        }
         const result = this.executeBlock(s.do || [], scope, context);
         if (result && result.__return__) {
           return result;
