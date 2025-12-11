@@ -2,7 +2,7 @@
   "$schema": "1.0",
   "functions": {
     "add": {
-      "type": "FUNCTION",
+      "type": "CALLBACK",
       "config": {
         "description": "Сложение двух чисел",
         "params": ["a", "b"],
@@ -12,7 +12,7 @@
     },
 
     "multiply": {
-      "type": "FUNCTION",
+      "type": "CALLBACK",
       "config": {
         "description": "Умножение двух чисел",
         "params": ["a", "b"],
@@ -22,7 +22,7 @@
     },
 
     "sumArray": {
-      "type": "FUNCTION",
+      "type": "CALLBACK",
       "config": {
         "description": "Сумма элементов массива",
         "params": ["items"],
@@ -44,7 +44,7 @@
     },
 
     "factorial": {
-      "type": "FUNCTION",
+      "type": "CALLBACK",
       "config": {
         "description": "Вычисление факториала",
         "params": ["n"],
@@ -70,7 +70,7 @@
     },
 
     "greet": {
-      "type": "FUNCTION",
+      "type": "CALLBACK",
       "config": {
         "description": "Приветствие пользователя",
         "params": ["name", "formal"],
@@ -84,7 +84,7 @@
     },
 
     "calculateOrder": {
-      "type": "FUNCTION",
+      "type": "CALLBACK",
       "config": {
         "description": "Расчёт стоимости заказа",
         "debug": false,
@@ -129,7 +129,7 @@
     },
 
     "findMax": {
-      "type": "FUNCTION",
+      "type": "CALLBACK",
       "config": {
         "description": "Поиск максимального значения в массиве",
         "params": ["numbers"],
@@ -153,7 +153,7 @@
     },
 
     "isPalindrome": {
-      "type": "FUNCTION",
+      "type": "CALLBACK",
       "config": {
         "description": "Проверка, является ли строка палиндромом",
         "params": ["str"],
@@ -180,7 +180,7 @@
     },
 
     "filterPositive": {
-      "type": "FUNCTION",
+      "type": "CALLBACK",
       "config": {
         "description": "Фильтрация положительных чисел",
         "params": ["numbers"],
@@ -207,7 +207,7 @@
     },
 
     "fibonacci": {
-      "type": "FUNCTION",
+      "type": "CALLBACK",
       "config": {
         "description": "N-ое число Фибоначчи",
         "params": ["n"],

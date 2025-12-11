@@ -315,8 +315,8 @@ export class JsonDslCompiler {
   }
 
   private validateFunction(name: string, def: FunctionDef): void {
-    if (def.type !== 'FUNCTION') {
-      throw new Error(`Function "${name}": type must be "FUNCTION"`);
+    if (def.type !== 'CALLBACK') {
+      throw new Error(`Function "${name}": type must be "CALLBACK"`);
     }
     if (!def.config) {
       throw new Error(`Function "${name}": config is required`);

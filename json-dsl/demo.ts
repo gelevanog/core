@@ -13,7 +13,7 @@ const config: DslConfig = {
   functions: {
     // Простое сложение
     add: {
-      type: 'FUNCTION',
+      type: 'CALLBACK',
       config: {
         description: 'Сложение двух чисел',
         params: ['a', 'b'],
@@ -24,7 +24,7 @@ const config: DslConfig = {
 
     // Умножение
     multiply: {
-      type: 'FUNCTION',
+      type: 'CALLBACK',
       config: {
         description: 'Умножение двух чисел',
         params: ['a', 'b'],
@@ -35,7 +35,7 @@ const config: DslConfig = {
 
     // Расчёт цены с налогом и скидкой (переменные из контекста)
     calculatePrice: {
-      type: 'FUNCTION',
+      type: 'CALLBACK',
       config: {
         description: 'Расчёт цены с учётом налога и скидки',
         params: ['basePrice'],
@@ -63,7 +63,7 @@ const config: DslConfig = {
 
     // Сумма массива
     sumArray: {
-      type: 'FUNCTION',
+      type: 'CALLBACK',
       config: {
         description: 'Сумма элементов массива',
         params: ['items'],
@@ -86,7 +86,7 @@ const config: DslConfig = {
 
     // Приветствие (greeting из контекста)
     greet: {
-      type: 'FUNCTION',
+      type: 'CALLBACK',
       config: {
         description: 'Приветствие',
         params: ['name'],
@@ -97,7 +97,7 @@ const config: DslConfig = {
 
     // Факториал
     factorial: {
-      type: 'FUNCTION',
+      type: 'CALLBACK',
       config: {
         description: 'Вычисление факториала',
         debug: false,
@@ -132,7 +132,7 @@ compiler.load(config);
 
 console.log('='.repeat(60));
 console.log('JSON DSL Compiler Demo');
-console.log('Формат: { type: "FUNCTION", config: { ... } }');
+console.log('Формат: { type: "CALLBACK", config: { ... } }');
 console.log('='.repeat(60));
 console.log();
 
@@ -198,7 +198,7 @@ console.log('-'.repeat(40));
 
 const exampleJson = {
   add: {
-    type: 'FUNCTION',
+    type: 'CALLBACK',
     config: {
       description: 'Сложение двух чисел',
       params: ['a', 'b'],

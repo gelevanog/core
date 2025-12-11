@@ -165,7 +165,7 @@ export interface FunctionConfig {
 }
 
 export interface FunctionDef {
-  type: 'FUNCTION';
+  type: 'CALLBACK';
   config: FunctionConfig;
 }
 

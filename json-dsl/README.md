@@ -31,13 +31,13 @@ const calculate = compiler.compile('calculatePrice', {
 
 ## Структура конфигурации
 
-Функции используют формат `{ type: "FUNCTION", config: { ... } }`:
+Функции используют формат `{ type: "CALLBACK", config: { ... } }`:
 
 ```json
 {
   "functions": {
     "add": {
-      "type": "FUNCTION",
+      "type": "CALLBACK",
       "config": {
         "debug": false,
         "description": "Сложение двух чисел",
@@ -359,7 +359,7 @@ class TenantFunctionProvider {
 ```json
 {
   "fibonacci": {
-    "type": "FUNCTION",
+    "type": "CALLBACK",
     "config": {
       "description": "N-ое число Фибоначчи",
       "params": ["n"],
