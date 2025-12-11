@@ -6,7 +6,7 @@
 
 - **Компиляция в функции** — JSON превращается в реальные JS-функции, которые можно передавать и вызывать
 - **Контекстное выполнение** — одна функция может работать с разными контекстами (переменные, внешние функции)
-- **Безопасность** — нет `eval`, whitelist методов
+- **Безопасность** — нет `eval`, белый список методов
 - **TypeScript** — полная типизация
 
 ## Быстрый старт
@@ -95,7 +95,7 @@ const calculate = compiler.compile('calculatePrice', {
 // Вызов пользовательской или встроенной функции
 { "call": "sumArray", "arguments": [{ "ref": "items" }] }
 
-// Вызов метода объекта (из whitelist)
+// Вызов метода объекта (из белого списка)
 { "method": "push", "object": { "ref": "arr" }, "arguments": [{ "ref": "item" }] }
 ```
 
@@ -214,7 +214,7 @@ const fn3 = compiler.compile('myFunction', {
 ### Логирование
 - `log(...args)` — вывод в консоль
 
-## Разрешённые методы (whitelist)
+## Разрешённые методы
 
 ```
 length, push, pop, shift, unshift, slice, concat,
@@ -228,12 +228,12 @@ toString, toFixed
 ## Безопасность
 
 - **Нет eval** — весь код интерпретируется через AST
-- **Whitelist методов** — только разрешённые методы объектов
+- **Белый список методов** — только разрешённые методы объектов
 - **Изолированный scope** — функции не имеют доступа к глобальным объектам
 
 ## Интеграция в ядро
 
-JSON DSL Compiler предназначен для интеграции в основное ядро приложения. Основные сценарии использования:
+JSON DSL Compiler предназначен для интеграции в ядро приложения. Основные сценарии использования:
 
 ### 1. Загрузка конфигурации из внешних источников
 
@@ -247,7 +247,7 @@ const compiler = new JsonDslCompiler();
 compiler.load(config);
 ```
 
-### 2. Регистрация в ядре как провайдер функций
+### 2. Регистрация как провайдер функций
 
 ```typescript
 // core/function-registry.ts
@@ -279,7 +279,7 @@ class FunctionRegistry {
 ### 3. Использование с контекстом приложения
 
 ```typescript
-// Передача сервисов ядра в DSL-функции
+// Передача сервисов в DSL-функции
 const compiler = new JsonDslCompiler();
 compiler.load(config);
 
@@ -295,7 +295,7 @@ const processOrder = compiler.compile('processOrder', {
     logEvent: analytics.track.bind(analytics),
     getUser: userService.getById.bind(userService),
   },
-  // Встроенные функции (расширение стандартных)
+  // Дополнительные встроенные функции
   builtins: {
     formatCurrency: (amount: number) => `${amount.toFixed(2)} ${appConfig.currency}`,
     now: () => new Date().toISOString(),
