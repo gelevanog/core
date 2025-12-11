@@ -1,7 +1,7 @@
 /**
  * Демонстрация JSON DSL Compiler
  * 
- * Формат функций: { type: "FUNCTION", config: { debug?: boolean, ...params } }
+ * Формат функций: { type: "CALLBACK", config: { debug?: boolean, ...params } }
  * Внутренние выражения и statements — упрощённый формат
  */
 
