@@ -208,28 +208,100 @@ export class JsonDslCompiler {
 
   private createBuiltins(): Record<string, BuiltinFn> {
     return {
-      abs: (x: unknown) => Math.abs(x as number),
-      floor: (x: unknown) => Math.floor(x as number),
-      ceil: (x: unknown) => Math.ceil(x as number),
-      round: (x: unknown) => Math.round(x as number),
-      min: (...args: unknown[]) => Math.min(...(args as number[])),
-      max: (...args: unknown[]) => Math.max(...(args as number[])),
-      pow: (x: unknown, y: unknown) => Math.pow(x as number, y as number),
-      sqrt: (x: unknown) => Math.sqrt(x as number),
+      // Математика — с проверкой на валидные числа
+      abs: (x: unknown) => {
+        const n = Number(x);
+        return Number.isFinite(n) ? Math.abs(n) : 0;
+      },
+      floor: (x: unknown) => {
+        const n = Number(x);
+        return Number.isFinite(n) ? Math.floor(n) : 0;
+      },
+      ceil: (x: unknown) => {
+        const n = Number(x);
+        return Number.isFinite(n) ? Math.ceil(n) : 0;
+      },
+      round: (x: unknown) => {
+        const n = Number(x);
+        return Number.isFinite(n) ? Math.round(n) : 0;
+      },
+      min: (...args: unknown[]) => {
+        const nums = args.map(Number).filter(Number.isFinite);
+        return nums.length > 0 ? Math.min(...nums) : 0;
+      },
+      max: (...args: unknown[]) => {
+        const nums = args.map(Number).filter(Number.isFinite);
+        return nums.length > 0 ? Math.max(...nums) : 0;
+      },
+      pow: (x: unknown, y: unknown) => {
+        const base = Number(x);
+        const exp = Number(y);
+        if (!Number.isFinite(base) || !Number.isFinite(exp)) return 0;
+        const result = Math.pow(base, exp);
+        return Number.isFinite(result) ? result : 0;
+      },
+      sqrt: (x: unknown) => {
+        const n = Number(x);
+        if (!Number.isFinite(n) || n < 0) return 0;
+        return Math.sqrt(n);
+      },
       random: () => Math.random(),
-      len: (x: unknown) => (Array.isArray(x) || typeof x === 'string') ? x.length : 0,
-      keys: (obj: unknown) => Object.keys((obj as object) || {}),
-      values: (obj: unknown) => Object.values((obj as object) || {}),
-      entries: (obj: unknown) => Object.entries((obj as object) || {}),
+
+      // Утилиты
+      len: (x: unknown) => {
+        if (x === null || x === undefined) return 0;
+        if (Array.isArray(x) || typeof x === 'string') return x.length;
+        return 0;
+      },
+      keys: (obj: unknown) => {
+        if (obj === null || obj === undefined || typeof obj !== 'object') return [];
+        return Object.keys(obj);
+      },
+      values: (obj: unknown) => {
+        if (obj === null || obj === undefined || typeof obj !== 'object') return [];
+        return Object.values(obj);
+      },
+      entries: (obj: unknown) => {
+        if (obj === null || obj === undefined || typeof obj !== 'object') return [];
+        return Object.entries(obj);
+      },
+
+      // Проверка типов
       isArray: (x: unknown) => Array.isArray(x),
-      isNumber: (x: unknown) => typeof x === 'number',
+      isNumber: (x: unknown) => typeof x === 'number' && Number.isFinite(x),
       isString: (x: unknown) => typeof x === 'string',
       isObject: (x: unknown) => x !== null && typeof x === 'object' && !Array.isArray(x),
       isNull: (x: unknown) => x === null || x === undefined,
-      toNumber: (x: unknown) => Number(x),
-      toString: (x: unknown) => String(x),
-      toJson: (x: unknown) => JSON.stringify(x),
-      fromJson: (x: unknown) => JSON.parse(x as string),
+      isNaN: (x: unknown) => Number.isNaN(x) || (typeof x === 'number' && !Number.isFinite(x)),
+
+      // Преобразования
+      toNumber: (x: unknown) => {
+        if (x === null || x === undefined) return 0;
+        const n = Number(x);
+        return Number.isFinite(n) ? n : 0;
+      },
+      toString: (x: unknown) => {
+        if (x === null || x === undefined) return '';
+        return String(x);
+      },
+      toJson: (x: unknown) => {
+        try {
+          return JSON.stringify(x);
+        } catch {
+          return '{}';
+        }
+      },
+      fromJson: (x: unknown) => {
+        if (x === null || x === undefined) return null;
+        if (typeof x !== 'string') return null;
+        try {
+          return JSON.parse(x);
+        } catch {
+          return null;
+        }
+      },
+
+      // Логирование
       log: (...args: unknown[]) => console.log('[DSL]', ...args),
     };
   }
@@ -311,7 +383,12 @@ export class JsonDslCompiler {
     if ('for' in stmt) {
       const s = stmt as ForStmt;
       const iterable = this.evalExpr(s.in, scope, context);
-      if (!iterable || typeof (iterable as Iterable<unknown>)[Symbol.iterator] !== 'function') {
+      
+      // Защита от null/undefined/NaN
+      if (iterable === null || iterable === undefined) {
+        return null; // Пустой цикл
+      }
+      if (typeof (iterable as Iterable<unknown>)[Symbol.iterator] !== 'function') {
         throw new Error('for requires an iterable');
       }
 
@@ -329,11 +406,19 @@ export class JsonDslCompiler {
     if ('while' in stmt) {
       const s = stmt as WhileStmt;
 
-      while (this.evalExpr(s.while, scope, context)) {
+      let condition = this.evalExpr(s.while, scope, context);
+      
+      // Защита: NaN, undefined, null — выход из цикла
+      while (condition !== null && condition !== undefined && condition !== false && !Number.isNaN(condition)) {
+        // Дополнительная проверка: если condition не boolean и не truthy number
+        if (condition === 0 || condition === '') break;
+        
         const result = this.executeBlock(s.do || [], scope, context);
         if (result && result.__return__) {
           return result;
         }
+        
+        condition = this.evalExpr(s.while, scope, context);
       }
       return null;
     }
